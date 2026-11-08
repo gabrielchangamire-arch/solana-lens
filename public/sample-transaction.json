@@ -1,0 +1,38 @@
+{
+  "slot": 371234567,
+  "blockTime": 1794146400,
+  "meta": {
+    "err": null,
+    "fee": 5000,
+    "preBalances": [2500000000, 400000000, 1],
+    "postBalances": [2249995000, 650000000, 1],
+    "innerInstructions": [],
+    "logMessages": [
+      "Program 11111111111111111111111111111111 invoke [1]",
+      "Program 11111111111111111111111111111111 success"
+    ]
+  },
+  "transaction": {
+    "message": {
+      "accountKeys": [
+        { "pubkey": "GabrielDemoWallet1111111111111111111111111", "signer": true, "writable": true },
+        { "pubkey": "RecipientDemoWallet11111111111111111111111", "signer": false, "writable": true },
+        { "pubkey": "11111111111111111111111111111111", "signer": false, "writable": false }
+      ],
+      "instructions": [
+        {
+          "program": "system",
+          "programId": "11111111111111111111111111111111",
+          "parsed": {
+            "type": "transfer",
+            "info": {
+              "source": "GabrielDemoWallet1111111111111111111111111",
+              "destination": "RecipientDemoWallet11111111111111111111111",
+              "lamports": 250000000
+            }
+          }
+        }
+      ]
+    }
+  }
+}

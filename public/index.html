@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Plain-English Solana transaction explanations and deterministic safety checks." />
+    <title>Solana Lens</title>
+    <link rel="stylesheet" href="/public/styles.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <header class="shell nav">
+      <a class="brand" href="#top" aria-label="Solana Lens home">
+        <span class="brand-mark">S</span>
+        <span>Solana Lens</span>
+      </a>
+      <span class="network-pill"><i></i> Devnet-first safety tool</span>
+    </header>
+
+    <main id="top" class="shell">
+      <section class="hero">
+        <p class="eyebrow">See what a transaction actually does</p>
+        <h1>Understand before you <span>trust.</span></h1>
+        <p class="hero-copy">Paste a Solana transaction signature and get a readable explanation, balance changes, program calls, and practical warning signals.</p>
+      </section>
+
+      <section class="analyzer-card" aria-labelledby="analyzer-title">
+        <div class="card-heading">
+          <div>
+            <p class="section-label">Transaction analyzer</p>
+            <h2 id="analyzer-title">Inspect a signature</h2>
+          </div>
+          <button id="sample-button" class="ghost-button" type="button">Try safe demo</button>
+        </div>
+
+        <form id="analyzer-form">
+          <label for="signature">Transaction signature</label>
+          <div class="input-row">
+            <input id="signature" name="signature" autocomplete="off" placeholder="Paste a Devnet transaction signature" />
+            <select id="network" name="network" aria-label="Network">
+              <option value="devnet">Devnet</option>
+              <option value="mainnet-beta">Mainnet</option>
+            </select>
+            <button id="analyze-button" class="primary-button" type="submit">Analyze</button>
+          </div>
+          <div class="form-actions">
+            <button id="latest-button" class="text-button" type="button">Find a recent Devnet transaction</button>
+            <p id="status" role="status">No wallet or private key required.</p>
+          </div>
+        </form>
+      </section>
+
+      <section id="results" class="results hidden" aria-live="polite">
+        <div class="summary-panel">
+          <div class="summary-topline">
+            <span id="result-status" class="status-badge">Succeeded</span>
+            <span id="result-network" class="muted">Devnet</span>
+          </div>
+          <h2>Plain-English explanation</h2>
+          <p id="result-summary" class="summary-copy"></p>
+          <div class="metric-grid">
+            <article><span>Fee</span><strong id="metric-fee">—</strong></article>
+            <article><span>Instructions</span><strong id="metric-instructions">—</strong></article>
+            <article><span>Programs</span><strong id="metric-programs">—</strong></article>
+            <article><span>Writable accounts</span><strong id="metric-writable">—</strong></article>
+          </div>
+        </div>
+
+        <div class="detail-grid">
+          <article class="detail-card">
+            <p class="section-label">Safety signals</p>
+            <div id="flags" class="stack"></div>
+          </article>
+          <article class="detail-card">
+            <p class="section-label">Programs invoked</p>
+            <div id="programs" class="chip-list"></div>
+          </article>
+          <article class="detail-card wide">
+            <p class="section-label">SOL balance changes</p>
+            <div id="changes" class="change-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="how-it-works">
+        <div>
+          <p class="section-label">Built for clarity</p>
+          <h2>Useful even when the wallet UI is not.</h2>
+        </div>
+        <ol>
+          <li><span>01</span><div><strong>Fetch</strong><p>Reads a confirmed transaction from Solana RPC.</p></div></li>
+          <li><span>02</span><div><strong>Decode</strong><p>Parses instructions, programs, fees, and account changes.</p></div></li>
+          <li><span>03</span><div><strong>Explain</strong><p>Turns the result into human language and warning signals.</p></div></li>
+        </ol>
+      </section>
+    </main>
+
+    <footer class="shell">Solana Lens is educational software. A clean result is not a guarantee of safety.</footer>
+    <script type="module" src="/public/app.js"></script>
+  </body>
+</html>
