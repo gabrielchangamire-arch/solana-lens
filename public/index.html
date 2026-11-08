@@ -31,7 +31,10 @@
             <p class="section-label">Transaction analyzer</p>
             <h2 id="analyzer-title">Inspect a signature</h2>
           </div>
-          <button id="sample-button" class="ghost-button" type="button">Try safe demo</button>
+          <div class="demo-actions">
+            <button id="sample-button" class="ghost-button" type="button">Safe demo</button>
+            <button id="risky-button" class="danger-button" type="button">Risky demo</button>
+          </div>
         </div>
 
         <form id="analyzer-form">
@@ -49,13 +52,44 @@
             <p id="status" role="status">No wallet or private key required.</p>
           </div>
         </form>
+
+        <div class="policy-panel">
+          <div>
+            <p class="section-label">Your safety policy</p>
+            <p class="policy-copy">The deterministic policy decides. AI may explain it, but cannot override it.</p>
+          </div>
+          <label>Maximum SOL outflow<input id="max-outflow" type="number" min="0" step="0.1" value="1" /></label>
+          <label>Maximum writable accounts<input id="max-writable" type="number" min="0" step="1" value="10" /></label>
+          <label class="toggle-label"><input id="block-unknown" type="checkbox" checked /> Block unfamiliar programs</label>
+        </div>
+      </section>
+
+      <section class="analyzer-card simulation-card" aria-labelledby="simulation-title">
+        <div class="card-heading">
+          <div>
+            <p class="section-label">Pre-sign firewall</p>
+            <h2 id="simulation-title">Simulate before signing</h2>
+          </div>
+          <span class="read-only-pill">Read only · never broadcast</span>
+        </div>
+        <p class="simulation-copy">Paste an unsigned base64 transaction. Solana Lens calls the real Solana simulation RPC with signature verification disabled and never sends the transaction.</p>
+        <label for="serialized-transaction">Unsigned serialized transaction</label>
+        <textarea id="serialized-transaction" placeholder="Paste base64 transaction data"></textarea>
+        <div class="simulation-actions">
+          <button id="load-simulation-button" class="text-button" type="button">Load official Devnet sample</button>
+          <button id="simulate-button" class="primary-button" type="button">Simulate without signing</button>
+        </div>
+        <p id="simulation-status" class="muted" role="status">No wallet connection is required.</p>
       </section>
 
       <section id="results" class="results hidden" aria-live="polite">
         <div class="summary-panel">
           <div class="summary-topline">
-            <span id="result-status" class="status-badge">Succeeded</span>
-            <span id="result-network" class="muted">Devnet</span>
+            <div class="badge-row">
+              <span id="policy-decision" class="decision-badge">Safe to review</span>
+              <span id="result-status" class="status-badge">Succeeded</span>
+            </div>
+            <span><span id="result-mode" class="muted">Confirmed</span> · <span id="result-network" class="muted">Devnet</span></span>
           </div>
           <h2>Plain-English explanation</h2>
           <p id="result-summary" class="summary-copy"></p>
@@ -77,8 +111,20 @@
             <div id="programs" class="chip-list"></div>
           </article>
           <article class="detail-card wide">
+            <p class="section-label">Policy checks</p>
+            <div id="policy-rules" class="policy-rules"></div>
+          </article>
+          <article class="detail-card wide">
             <p class="section-label">SOL balance changes</p>
             <div id="changes" class="change-list"></div>
+          </article>
+          <article class="detail-card wide ai-card">
+            <div class="ai-heading">
+              <div><p class="section-label">Grounded explanation</p><h3>Explain this report</h3></div>
+              <button id="ai-button" class="ghost-button" type="button">Generate with AI</button>
+            </div>
+            <p id="ai-explanation" class="summary-copy">The deterministic summary above is always available. If a model credential is configured, AI can restate only the verified evidence in simpler language.</p>
+            <p id="ai-status" class="muted"></p>
           </article>
         </div>
       </section>
@@ -89,9 +135,9 @@
           <h2>Useful even when the wallet UI is not.</h2>
         </div>
         <ol>
-          <li><span>01</span><div><strong>Fetch</strong><p>Reads a confirmed transaction from Solana RPC.</p></div></li>
-          <li><span>02</span><div><strong>Decode</strong><p>Parses instructions, programs, fees, and account changes.</p></div></li>
-          <li><span>03</span><div><strong>Explain</strong><p>Turns the result into human language and warning signals.</p></div></li>
+          <li><span>01</span><div><strong>Simulate</strong><p>Uses Solana RPC to preview an unsigned transaction without broadcasting it.</p></div></li>
+          <li><span>02</span><div><strong>Enforce</strong><p>Checks deterministic limits for outflow, programs, failures, and write access.</p></div></li>
+          <li><span>03</span><div><strong>Explain</strong><p>Shows the evidence clearly, with an optional grounded AI explanation.</p></div></li>
         </ol>
       </section>
     </main>

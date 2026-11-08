@@ -1,32 +1,8 @@
 # Solana Lens Demo Guide
 
-## The one-sentence pitch
+## The pitch
 
-Solana Lens turns a public Solana transaction into a readable explanation and highlights warning signals without asking for a wallet, private key, or seed phrase.
-
-## What to submit it for
-
-- Best Beginner Hack: the strongest current fit.
-- Top 3 Overall: every eligible project is entered automatically.
-- AI Track only after adding a real model-backed explanation layer. The current safety analysis is deterministic, not AI-generated.
-
-## Deadline and submission status
-
-- The event schedule lists the final project deadline as Sunday, November 8 at 8:45 AM Pacific.
-- The MLH Challenges portal displays a later close time of 10:00 AM Pacific. Treat 8:45 AM as the safe deadline.
-- The submission form requires Gabriel to sign in to MLH Challenges before its exact fields can be inspected or completed.
-- Do not wait until the last few minutes: create the project entry first, then improve its links and description before the cutoff.
-
-## Submission checklist
-
-- Project name: Solana Lens.
-- Short description: use `SUBMISSION_COPY.md`.
-- Working code in a dedicated public repository.
-- README with setup and demo instructions.
-- Screenshot or short demonstration video.
-- Honest prize selection: Best Beginner Hack; overall entry is automatic.
-- Verify that no secret, API key, wallet private key, seed phrase, or private link is present.
-- Open every submitted link in a private/incognito window before final submission.
+> Solana Lens is a pre-sign firewall. It simulates an unsigned transaction on Solana, applies limits the user can see and control, and explains exactly why the transaction is allowed or blocked. It never asks the user to sign and never broadcasts the transaction.
 
 ## Five-minute preflight
 
@@ -34,102 +10,103 @@ Solana Lens turns a public Solana transaction into a readable explanation and hi
 2. Run:
 
    ```bash
-   cd /Users/gabriel/Documents/GC/MLH-Solana/hackathon/solana-lens
+   cd path/to/solana-lens
    ./run-demo.sh
    ```
 
-3. Wait for all three tests to pass.
-4. Chrome should open `http://localhost:4173` automatically.
-5. Click **Try safe demo** once and confirm that the result appears.
-6. Refresh the page so the judges see the clean starting screen.
-7. Keep this guide open on another screen or device.
+3. Confirm all tests pass.
+4. Open `http://localhost:4173` in Chrome.
+5. Click **Risky demo**, then **Safe demo**.
+6. Click **Load official Devnet sample**, then **Simulate without signing**.
+7. Confirm the page says the simulation succeeded and was not broadcast.
+8. Refresh once so the judges see a clean starting screen.
 
-## The safest 90-second demo
+## The 90-second demo
 
-### 0:00–0:15 — Problem
-
-Say:
-
-> Solana transactions are fast and inexpensive, but the confirmation details can be difficult for a normal user to understand. Solana Lens makes a transaction readable before someone trusts or repeats similar activity.
-
-### 0:15–0:30 — Product
-
-Point to the signature field and say:
-
-> A user can paste any confirmed Devnet or Mainnet transaction signature. The app reads public RPC data only. It never asks for a wallet, private key, or seed phrase.
-
-### 0:30–0:55 — Guaranteed demonstration
-
-1. Click **Try safe demo**.
-2. Point to the plain-English explanation.
-3. Point to the four counters: fee, instructions, programs, and writable accounts.
-4. Point to **Safety signals** and the two SOL balance changes.
+### 0:00–0:12 — The problem
 
 Say:
 
-> This sample is a successful SOL transfer. The app explains the fee, the invoked program, the accounts that can be changed, and the actual balance movement. It also applies visible deterministic rules, so the user can see why a warning appears.
+> Wallet confirmations can tell you that a transaction exists without making its impact understandable. Users need to know what will run and whether it violates their own limits before they approve it.
 
-### 0:55–1:15 — Live Solana proof
+### 0:12–0:32 — The policy is the product
 
-1. Click **Find a recent Devnet transaction**.
-2. Wait for the result.
-3. Point to the real signature and the programs invoked.
-
-Say:
-
-> This is a live confirmed Devnet transaction fetched through Solana JSON-RPC. Solana is doing real work here: the result comes from on-chain transaction data rather than a mock backend.
-
-If the RPC request fails, do not troubleshoot during the presentation. Say:
-
-> The public RPC is temporarily unavailable, which is why the offline path is included. The same analyzer code processes both results.
-
-Then click **Try safe demo** and continue.
-
-### 1:15–1:30 — Finish
+1. Point to **Your safety policy**.
+2. Point to the 1 SOL outflow limit, 10 writable-account limit, and unfamiliar-program toggle.
+3. Click **Risky demo**.
 
 Say:
 
-> The next step is to simulate unsigned transactions before wallet confirmation and add verified program identities. The goal is a clear safety layer between a transaction request and a user's signature.
+> These are visible, deterministic rules. This transaction technically succeeds, but Solana Lens blocks it because it sends more than one SOL, invokes an unfamiliar program, and exposes too many writable accounts.
 
-## Three-minute version
+### 0:32–0:47 — Show the contrast
 
-Use the same flow, then add:
+1. Click **Safe demo**.
+2. Point to **Safe to review** and the green policy checks.
 
-> The analyzer combines outer and inner instructions, calculates fee and SOL balance changes, counts writable accounts, recognizes common Solana programs, and flags failures, unfamiliar programs, broad write access, or large SOL outflows. The analysis is intentionally deterministic so every warning can be explained.
+Say:
 
-Show one warning from the live Devnet result if one appears. Explain that “unfamiliar” does not automatically mean malicious; it means the user should verify the program ID.
+> The same policy allows a small, recognized transfer. Every outcome includes the evidence and the exact reason, so this is not a black-box safety score.
+
+### 0:47–1:12 — Live pre-sign proof
+
+1. Scroll to **Simulate before signing**.
+2. Click **Load official Devnet sample**.
+3. Click **Simulate without signing**.
+4. Point to **Pre-sign simulation**, **Not broadcast**, compute units in the explanation, and **Token-2022**.
+
+Say:
+
+> This is a real call to Solana's simulation RPC using an unsigned serialized transaction. Signature verification is disabled, the recent blockhash is replaced for simulation, and the app never broadcasts anything. The result shows that Token-2022 ran and how much compute the transaction consumed.
+
+### 1:12–1:30 — The differentiator
+
+Say:
+
+> The deterministic policy always makes the decision. An optional grounded model can translate that verified report into simpler language, but it cannot override the rules. The next step is packaging this as a component that wallets and dApps can place directly before their signing screen.
+
+## If the live RPC fails
+
+Do not debug during judging. Say:
+
+> The public RPC is temporarily unavailable, so I will use the built-in deterministic fixtures. They run through the same analyzer and policy engine.
+
+Then use **Risky demo** and **Safe demo**.
 
 ## Likely questions
 
-### How did you build it?
+### What did you personally build?
 
-> I used a small Node server and a browser client. The client calls Solana JSON-RPC with `getTransaction` using parsed encoding. A reusable analyzer reads the instructions and metadata, calculates the important values, and turns them into a report for the interface.
+> I built the Node server, the browser interface, the confirmed-transaction analyzer, the simulation parser, the policy engine, the grounded explanation boundary, the offline fixtures, and the automated tests.
 
-### Where is Solana used?
+### Where is Solana actually used?
 
-> Solana is the data source and execution network. The app reads confirmed Devnet or Mainnet transactions through Solana JSON-RPC and interprets their instructions, programs, accounts, fees, and balance changes.
+> The pre-sign path calls Solana `simulateTransaction` with an unsigned base64 transaction. The confirmed path calls Solana JSON-RPC for parsed Devnet or Mainnet activity and interprets instructions, programs, account permissions, fees, transfers, and balance changes.
 
-### Is this really a safety guarantee?
+### How do you know the transaction was not sent?
 
-> No. It is an educational risk screen. A clean result is not a guarantee. The interface says that explicitly, and unfamiliar programs are presented as something to verify rather than automatically malicious.
+> The server only calls the simulation RPC. There is no send or broadcast endpoint, no wallet connection, and the interface never requests a signature or private key.
 
-### Why no wallet connection?
+### Why is the decision deterministic instead of AI-generated?
 
-> The first version is read-only by design. That reduces risk, makes the demo reliable, and proves the transaction-analysis layer before introducing wallet permissions or signing.
+> A safety boundary should be inspectable and testable. The user sees the exact limits and rules. The model is only an accessibility layer for wording and receives the already-computed report.
 
-### Where is the AI?
+### Is “Safe to review” a guarantee?
 
-> The current working version uses deterministic analysis so its warnings are explainable and testable. A model-backed explanation layer is a planned enhancement, but I would not claim the AI track until that layer is implemented and doing real work.
+> No. It means the configured checks passed. The interface explicitly preserves that distinction, and unfamiliar programs are marked for verification rather than called malicious.
+
+### What makes this different from a block explorer?
+
+> A block explorer mainly explains what already happened. Solana Lens has a pre-sign path: it simulates an unsigned transaction, checks it against user-defined policies, and can block the review flow before a signature exists.
 
 ### What would you build next?
 
-> I would accept an unsigned transaction, simulate it before wallet confirmation, resolve verified program identities, and package the analyzer so wallets and dApps can embed the safety report.
+> I would decode the unsigned message so the pre-sign report can show exact writable accounts and balance impact, add a maintained program registry, and ship the engine as a wallet-adapter component.
 
-## Never do this during the demo
+## Do not do this during the demo
 
-- Do not enter a seed phrase or private key.
-- Do not connect a wallet just to make the demo look more advanced.
-- Do not start by testing an unknown Mainnet transaction.
-- Do not spend presentation time debugging a public RPC failure.
-- Do not describe an unfamiliar program as malicious without evidence.
-
+- Do not connect a real wallet.
+- Do not enter a seed phrase, private key, or secret.
+- Do not call unfamiliar programs malicious without evidence.
+- Do not describe the optional model as the decision maker.
+- Do not troubleshoot a public RPC failure live.

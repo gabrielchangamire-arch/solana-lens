@@ -1,3 +1,5 @@
+import { evaluatePolicies } from "./policy.js";
+
 const LAMPORTS_PER_SOL = 1_000_000_000;
 
 const KNOWN_PROGRAMS = new Map([
@@ -73,7 +75,7 @@ function transferDetails(instruction) {
   return null;
 }
 
-export function analyzeTransaction(transaction, { network = "devnet", signature = "" } = {}) {
+export function analyzeTransaction(transaction, { network = "devnet", signature = "", policies = {} } = {}) {
   if (!transaction?.transaction?.message || !transaction?.meta) {
     throw new Error("The RPC response does not contain a parsed transaction and metadata.");
   }
@@ -117,7 +119,8 @@ export function analyzeTransaction(transaction, { network = "devnet", signature 
   const fee = sol(transaction.meta.fee);
   const summary = `This ${network} transaction ${status} with ${instructions.length} instruction${instructions.length === 1 ? "" : "s"}, invoked ${programs.length} program${programs.length === 1 ? "" : "s"}, and paid a ${fee} SOL network fee. ${transfers.length ? `It contains ${transfers.length} parsed transfer${transfers.length === 1 ? "" : "s"}.` : "No parsed transfer was detected."}`;
 
-  return {
+  const report = {
+    mode: "confirmed",
     signature,
     network,
     status,
@@ -131,7 +134,11 @@ export function analyzeTransaction(transaction, { network = "devnet", signature 
     flags,
     instructionCount: instructions.length,
     writableAccounts,
+    unknownProgramCount: new Set(unknownPrograms).size,
+    unknownProgramIds: [...new Set(unknownPrograms)],
   };
+  report.policy = evaluatePolicies(report, policies);
+  return report;
 }
 
 export const helpers = { shorten, sol };

@@ -5,12 +5,14 @@ const rpcUrls = {
   "mainnet-beta": "https://api.mainnet-beta.solana.com",
 };
 const systemProgram = "11111111111111111111111111111111";
+const officialSimulationSample = "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAEEjNmKiZGiOtSZ+g0//wH5kEQo3+UzictY+KlLV8hjXcs44M/Xnr+1SlZsqS6cFMQc46yj9PIsxqkycxJmXT+veJjIvefX4nhY9rY+B5qreeqTHu4mG6Xtxr5udn4MN8PnBt324e51j94YQl285GzN2rYa/E2DuQ0n/r35KNihi/zamQ6EeyeeVDvPVgUO2W3Lgt9hT+CfyqHvIa11egFPCgEDAwIBAAkDZAAAAAAAAAA=";
 
 const form = document.querySelector("#analyzer-form");
 const signatureInput = document.querySelector("#signature");
 const networkInput = document.querySelector("#network");
 const status = document.querySelector("#status");
 const results = document.querySelector("#results");
+let currentReport = null;
 
 async function rpc(network, method, params) {
   const response = await fetch(rpcUrls[network], {
@@ -24,6 +26,26 @@ async function rpc(network, method, params) {
   return payload.result;
 }
 
+async function postJson(path, body) {
+  const response = await fetch(path, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const payload = await response.json();
+  if (!response.ok) throw new Error(payload.error || `Request failed with HTTP ${response.status}.`);
+  return payload;
+}
+
+function policies() {
+  return {
+    maxSolOutflow: document.querySelector("#max-outflow").value,
+    maxWritableAccounts: document.querySelector("#max-writable").value,
+    blockUnknownPrograms: document.querySelector("#block-unknown").checked,
+    blockFailed: true,
+  };
+}
+
 function setBusy(message) {
   status.textContent = message;
   document.querySelector("#analyze-button").disabled = true;
@@ -34,14 +56,23 @@ function setReady(message) {
   document.querySelector("#analyze-button").disabled = false;
 }
 
+function decisionClass(decision) {
+  return decision === "blocked" ? "blocked" : decision === "attention" ? "attention" : "safe";
+}
+
 function render(report) {
+  currentReport = report;
   results.classList.remove("hidden");
+  const decision = document.querySelector("#policy-decision");
+  decision.textContent = report.policy.label;
+  decision.className = `decision-badge ${decisionClass(report.policy.decision)}`;
   const badge = document.querySelector("#result-status");
   badge.textContent = report.status;
   badge.classList.toggle("failed", report.status === "failed");
+  document.querySelector("#result-mode").textContent = report.mode === "simulation" ? "Pre-sign simulation" : "Confirmed transaction";
   document.querySelector("#result-network").textContent = report.network;
   document.querySelector("#result-summary").textContent = report.summary;
-  document.querySelector("#metric-fee").textContent = `${report.fee} SOL`;
+  document.querySelector("#metric-fee").textContent = report.fee === null ? "Not broadcast" : `${report.fee} SOL`;
   document.querySelector("#metric-instructions").textContent = report.instructionCount;
   document.querySelector("#metric-programs").textContent = report.programs.length;
   document.querySelector("#metric-writable").textContent = report.writableAccounts;
@@ -62,6 +93,16 @@ function render(report) {
     return chip;
   }));
 
+  document.querySelector("#policy-rules").replaceChildren(...report.policy.rules.map((rule) => {
+    const node = document.createElement("div");
+    node.className = `policy-rule ${rule.passed ? "passed" : rule.blocking ? "blocked" : "attention"}`;
+    node.innerHTML = `<span class="rule-icon"></span><div><strong></strong><p></p></div>`;
+    node.querySelector(".rule-icon").textContent = rule.passed ? "✓" : rule.blocking ? "×" : "!";
+    node.querySelector("strong").textContent = rule.title;
+    node.querySelector("p").textContent = rule.detail;
+    return node;
+  }));
+
   const changeNodes = report.changes.slice(0, 8).map((change) => {
     const node = document.createElement("div");
     node.className = "change";
@@ -75,10 +116,12 @@ function render(report) {
   if (!changeNodes.length) {
     const empty = document.createElement("p");
     empty.className = "muted";
-    empty.textContent = "No material SOL balance change was detected.";
+    empty.textContent = report.mode === "simulation" ? "This RPC simulation did not request post-simulation account snapshots." : "No material SOL balance change was detected.";
     changeNodes.push(empty);
   }
   document.querySelector("#changes").replaceChildren(...changeNodes);
+  document.querySelector("#ai-explanation").textContent = "The deterministic decision above is final. Generate a grounded explanation only if a model credential is configured.";
+  document.querySelector("#ai-status").textContent = "";
   results.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
@@ -90,8 +133,8 @@ async function analyze(signature, network) {
     maxSupportedTransactionVersion: 0,
   }]);
   if (!transaction) throw new Error("Transaction not found. Check the network and confirmation status.");
-  render(analyzeTransaction(transaction, { network, signature }));
-  setReady("Analysis complete. Verify unknown programs before signing similar transactions.");
+  render(analyzeTransaction(transaction, { network, signature, policies: policies() }));
+  setReady("Analysis complete. The policy decision is based on visible deterministic evidence.");
 }
 
 form.addEventListener("submit", async (event) => {
@@ -102,11 +145,7 @@ form.addEventListener("submit", async (event) => {
     signatureInput.focus();
     return;
   }
-  try {
-    await analyze(signature, networkInput.value);
-  } catch (error) {
-    setReady(error.message);
-  }
+  try { await analyze(signature, networkInput.value); } catch (error) { setReady(error.message); }
 });
 
 document.querySelector("#latest-button").addEventListener("click", async () => {
@@ -118,21 +157,57 @@ document.querySelector("#latest-button").addEventListener("click", async () => {
     if (!candidate) throw new Error("No recent successful Devnet transaction was available.");
     signatureInput.value = candidate;
     await analyze(candidate, "devnet");
-  } catch (error) {
-    setReady(error.message);
-  }
+  } catch (error) { setReady(error.message); }
 });
 
+async function loadDemo(path, signature, message) {
+  setBusy(message);
+  const response = await fetch(path);
+  const transaction = await response.json();
+  signatureInput.value = signature;
+  networkInput.value = "devnet";
+  render(analyzeTransaction(transaction, { network: "devnet", signature, policies: policies() }));
+  setReady("Offline demonstration loaded. No network request was required.");
+}
+
 document.querySelector("#sample-button").addEventListener("click", async () => {
+  try { await loadDemo("/public/sample-transaction.json", "offline-safe-demo", "Loading the safe demonstration…"); } catch (error) { setReady(error.message); }
+});
+
+document.querySelector("#risky-button").addEventListener("click", async () => {
+  try { await loadDemo("/public/risky-transaction.json", "offline-risky-demo", "Loading the risky demonstration…"); } catch (error) { setReady(error.message); }
+});
+
+document.querySelector("#load-simulation-button").addEventListener("click", () => {
+  document.querySelector("#serialized-transaction").value = officialSimulationSample;
+  document.querySelector("#simulation-status").textContent = "Official unsigned Solana RPC sample loaded. It will be simulated, never broadcast.";
+});
+
+document.querySelector("#simulate-button").addEventListener("click", async () => {
+  const simulationStatus = document.querySelector("#simulation-status");
   try {
-    setBusy("Loading the offline demonstration…");
-    const response = await fetch("/public/sample-transaction.json");
-    const transaction = await response.json();
-    signatureInput.value = "offline-demo-transaction";
-    networkInput.value = "devnet";
-    render(analyzeTransaction(transaction, { network: "devnet", signature: "offline-demo-transaction" }));
-    setReady("Offline demo loaded. No network request was required.");
-  } catch (error) {
-    setReady(error.message);
-  }
+    simulationStatus.textContent = "Calling Solana simulateTransaction without a signature…";
+    const report = await postJson("/api/simulate", {
+      serializedTransaction: document.querySelector("#serialized-transaction").value,
+      network: networkInput.value,
+      policies: policies(),
+    });
+    render(report);
+    simulationStatus.textContent = "Simulation complete. The transaction was not broadcast and no wallet was connected.";
+  } catch (error) { simulationStatus.textContent = error.message; }
+});
+
+document.querySelector("#ai-button").addEventListener("click", async () => {
+  const aiStatus = document.querySelector("#ai-status");
+  if (!currentReport) return;
+  try {
+    aiStatus.textContent = "Generating an explanation grounded in the deterministic report…";
+    const result = await postJson("/api/explain", { report: currentReport });
+    if (!result.available) {
+      aiStatus.textContent = "AI is not configured. Set OPENAI_API_KEY on the server; the deterministic analyzer remains fully functional.";
+      return;
+    }
+    document.querySelector("#ai-explanation").textContent = result.explanation;
+    aiStatus.textContent = "Grounded explanation ready. The policy decision was not changed.";
+  } catch (error) { aiStatus.textContent = error.message; }
 });

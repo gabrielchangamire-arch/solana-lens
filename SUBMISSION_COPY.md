@@ -6,45 +6,60 @@ Solana Lens
 
 ## Tagline
 
-Understand a Solana transaction before you trust it.
+The pre-sign firewall for Solana transactions.
 
 ## Short description
 
-Solana Lens converts a confirmed Solana transaction into a plain-English explanation. It shows fees, invoked programs, writable accounts, parsed transfers, and SOL balance changes, then highlights practical warning signals such as failed execution, unfamiliar programs, broad write access, or large SOL outflows. It reads public Devnet or Mainnet RPC data and never requests a wallet, private key, or seed phrase.
+Solana Lens simulates an unsigned Solana transaction before a user signs it, applies visible safety limits, and explains exactly why it is safe to review or blocked. It never requests a private key, never asks the user to sign, and never broadcasts the transaction.
 
 ## The problem
 
-Transaction details are difficult for many users to interpret. A signature or wallet confirmation can hide the practical questions a user cares about: What programs ran? Which accounts changed? How much SOL moved? Is anything unusual?
+Wallet confirmations expose technical fields but often fail to make practical risk understandable. A user needs to know whether a transaction will execute, which programs and accounts it can affect, how much SOL can leave, and whether it violates limits the user chose.
 
 ## The solution
 
-Solana Lens fetches parsed transaction data through Solana JSON-RPC and applies a transparent analyzer. The interface explains the result in one sentence, exposes the underlying metrics, and makes each warning understandable. A built-in offline sample keeps the product demonstrable even when a public RPC endpoint is unavailable.
+Solana Lens turns the signing boundary into an inspectable safety workflow:
+
+1. **Simulate:** call Solana's real `simulateTransaction` RPC on an unsigned serialized transaction.
+2. **Enforce:** apply deterministic limits for execution failure, SOL outflow, unfamiliar programs, and writable-account access.
+3. **Explain:** show the evidence and reason for every rule. An optional grounded model can simplify the wording but cannot change the decision.
+
+The app also inspects confirmed Devnet or Mainnet signatures and includes safe and risky offline fixtures so the full policy flow remains demonstrable if a public RPC is unavailable.
 
 ## How Solana is used
 
+- `simulateTransaction` previews an unsigned transaction without broadcasting it.
 - `getTransaction` reads confirmed Devnet or Mainnet activity.
-- `getSignaturesForAddress` finds a recent successful Devnet transaction for the live demo.
-- Parsed instructions identify transfers and invoked programs.
-- Transaction metadata provides execution status, fees, account permissions, and balance changes.
+- `getSignaturesForAddress` finds a recent successful Devnet transaction for a live demonstration.
+- Simulation logs reveal invoked programs and compute usage.
+- Parsed transaction metadata provides execution status, fees, account permissions, transfers, and balance changes.
 
 ## What is working
 
-- Live Devnet and Mainnet transaction lookup.
-- Plain-English deterministic summaries.
-- Parsed SOL and token-transfer detection.
-- Program, fee, instruction, writable-account, and balance-change views.
-- Warning signals for failed transactions, unfamiliar programs, broad write access, and large SOL outflows.
-- Offline demonstration and automated analyzer tests.
+- Real unsigned pre-sign simulation.
+- No signing, wallet connection, or broadcast path.
+- Configurable deterministic policy engine.
+- Safe, attention, and blocked decisions with per-rule evidence.
+- Confirmed Devnet and Mainnet transaction inspection.
+- Fee, instruction, program, writable-account, transfer, compute, and balance-change views.
+- Optional model-backed explanation constrained to the verified deterministic report.
+- Safe and risky offline demo fixtures.
+- Six automated tests covering analysis, policy, simulation, and AI fallback behavior.
 
-## Next steps
+## Why it is different
 
-- Simulate unsigned transactions before wallet confirmation.
-- Resolve program identities from a maintained registry.
-- Add an optional model-backed explanation layer while keeping deterministic warnings visible.
-- Package the analyzer as an embeddable component for wallets and dApps.
+Solana Lens is not only a post-transaction explorer. Its strongest path happens before a signature exists. The policy engine is transparent rather than a black-box score, and the optional model is deliberately prevented from making the safety decision.
 
-## Suggested tracks
+## Built by
 
-- Best Beginner Hack
+Gabriel Changamire — solo project.
+
+## Suggested categories
+
 - Top 3 Overall
+- Best Beginner Hack, if the event's eligibility definition applies
+- AI category only when the live deployment has a configured and tested model credential
 
+## One-line judge takeaway
+
+> Solana Lens moves transaction understanding from after-the-fact exploration to a pre-sign, user-controlled safety boundary.

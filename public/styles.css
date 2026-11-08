@@ -22,7 +22,7 @@ body {
   color: var(--text);
   overflow-x: hidden;
 }
-button, input, select { font: inherit; }
+button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 .shell { width: min(1120px, calc(100% - 40px)); margin-inline: auto; position: relative; }
 .ambient { position: fixed; border-radius: 999px; filter: blur(110px); opacity: .16; pointer-events: none; }
@@ -46,17 +46,35 @@ label { display: block; margin: 28px 0 10px; color: #cbd5e1; font-size: 14px; fo
 .input-row { display: grid; grid-template-columns: 1fr 145px 140px; gap: 10px; }
 input, select { width: 100%; color: var(--text); border: 1px solid var(--line); border-radius: 14px; background: #0b1220; padding: 16px; outline: none; }
 input:focus, select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(20,241,149,.12); }
-.primary-button, .ghost-button, .text-button { border: 0; border-radius: 14px; font-weight: 800; }
+.primary-button, .ghost-button, .text-button, .danger-button { border: 0; border-radius: 14px; font-weight: 800; }
 .primary-button { color: #06120d; background: linear-gradient(135deg, var(--green), #5eead4); padding: 15px 22px; }
 .ghost-button { color: var(--text); background: rgba(153,69,255,.14); border: 1px solid rgba(153,69,255,.4); padding: 11px 16px; }
+.danger-button { color: #ffe4e6; background: rgba(251,113,133,.12); border: 1px solid rgba(251,113,133,.42); padding: 11px 16px; }
 .text-button { color: var(--green); background: transparent; padding: 14px 0; }
+.demo-actions, .simulation-actions, .badge-row, .ai-heading { display: flex; align-items: center; gap: 10px; }
 .form-actions { margin-top: 8px; }
 #status { margin: 0; color: var(--muted); font-size: 13px; }
+.policy-panel { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 14px; align-items: end; border-top: 1px solid var(--line); margin-top: 24px; padding-top: 22px; }
+.policy-panel label { margin: 0; font-size: 12px; }
+.policy-panel input[type="number"] { margin-top: 8px; padding: 12px; }
+.policy-copy, .simulation-copy { color: var(--muted); margin: 5px 0 0; line-height: 1.55; }
+.toggle-label { display: flex !important; align-items: center; gap: 9px; min-height: 46px; }
+.toggle-label input { width: 18px; height: 18px; accent-color: var(--green); }
+.simulation-card { margin-top: 18px; }
+.read-only-pill { color: var(--green); border: 1px solid rgba(20,241,149,.3); background: rgba(20,241,149,.08); border-radius: 999px; padding: 8px 12px; font-size: 12px; font-weight: 800; }
+textarea { width: 100%; min-height: 118px; resize: vertical; color: var(--text); border: 1px solid var(--line); border-radius: 14px; background: #0b1220; padding: 16px; outline: none; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; line-height: 1.45; }
+textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(20,241,149,.12); }
+.simulation-actions { justify-content: space-between; margin-top: 10px; }
+#simulation-status { margin-bottom: 0; }
 .results { margin-top: 28px; }
 .hidden { display: none; }
 .summary-panel { border-radius: 28px; padding: 34px; }
 .status-badge { color: #052e22; background: var(--green); border-radius: 999px; padding: 7px 12px; font-size: 12px; font-weight: 900; text-transform: uppercase; }
 .status-badge.failed { color: #fff; background: var(--danger); }
+.decision-badge { border-radius: 999px; padding: 8px 13px; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; }
+.decision-badge.safe { color: #052e22; background: var(--green); }
+.decision-badge.attention { color: #422006; background: var(--warning); }
+.decision-badge.blocked { color: white; background: var(--danger); box-shadow: 0 0 24px rgba(251,113,133,.22); }
 .muted { color: var(--muted); }
 .summary-copy { max-width: 900px; color: #dbeafe; font-size: 19px; line-height: 1.65; }
 .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 26px; }
@@ -79,6 +97,16 @@ input:focus, select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rg
 .change code { color: #cbd5e1; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .change strong.positive { color: var(--green); }
 .change strong.negative { color: var(--danger); }
+.policy-rules { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+.policy-rule { display: grid; grid-template-columns: 32px 1fr; gap: 10px; align-items: start; border: 1px solid var(--line); background: rgba(2,6,23,.45); border-radius: 14px; padding: 14px; }
+.policy-rule .rule-icon { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font-weight: 900; }
+.policy-rule.passed .rule-icon { color: #052e22; background: var(--green); }
+.policy-rule.blocked .rule-icon { color: white; background: var(--danger); }
+.policy-rule.attention .rule-icon { color: #422006; background: var(--warning); }
+.policy-rule p { color: var(--muted); margin: 5px 0 0; font-size: 13px; line-height: 1.45; }
+.ai-card { background: linear-gradient(135deg, rgba(153,69,255,.12), rgba(20,241,149,.06)); }
+.ai-heading { justify-content: space-between; }
+.ai-heading h3 { margin: 6px 0 0; font-size: 24px; }
 .how-it-works { display: grid; grid-template-columns: .9fr 1.1fr; gap: 60px; border-radius: 28px; padding: 42px; margin: 88px 0 42px; }
 .how-it-works ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 24px; }
 .how-it-works li { display: grid; grid-template-columns: 48px 1fr; gap: 14px; }
@@ -94,6 +122,10 @@ footer { color: var(--muted); padding: 20px 0 48px; font-size: 13px; }
   .analyzer-card { padding: 22px; }
   .input-row { grid-template-columns: 1fr; }
   .form-actions, .card-heading { align-items: flex-start; flex-direction: column; }
+  .demo-actions { width: 100%; }
+  .policy-panel { grid-template-columns: 1fr; }
+  .policy-rules { grid-template-columns: 1fr; }
+  .simulation-actions, .ai-heading { align-items: stretch; flex-direction: column; }
   .metric-grid { grid-template-columns: 1fr 1fr; }
   .detail-grid, .how-it-works { grid-template-columns: 1fr; }
   .detail-card.wide { grid-column: auto; }
