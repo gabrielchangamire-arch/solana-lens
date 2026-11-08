@@ -41,7 +41,8 @@ test("Gemini is preferred and receives only the compact deterministic report", a
   const body = JSON.parse(request.options.body);
   assert.equal(body.generationConfig.temperature, 0.2);
   assert.doesNotMatch(body.contents[0].parts[0].text, /privateField/);
-  assert.match(body.systemInstruction.parts[0].text, /cannot|Never call/i);
+  assert.match(body.systemInstruction.parts[0].text, /safe to review/i);
+  assert.match(body.systemInstruction.parts[0].text, /never say the transaction itself is safe/i);
 });
 
 test("OpenAI remains available as a fallback provider", async () => {

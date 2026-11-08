@@ -32,7 +32,7 @@ function extractGeminiText(response) {
     .trim();
 }
 
-const instructions = "You explain Solana transaction safety reports. Use only the supplied deterministic evidence. Never call a transaction safe; use the exact policy decision. Explain unfamiliar programs as requiring verification, not as malicious. Write 2 concise sentences for a nontechnical user.";
+const instructions = "You explain Solana transaction safety reports using only the supplied deterministic evidence. Write exactly 2 short sentences for a nontechnical user and mention at least one concrete evidence field. When policy.decision is safe, say the configured checks passed or the transaction is safe to review; never say the transaction itself is safe. Preserve blocked or attention decisions exactly. Describe unfamiliar programs as requiring verification, not as malicious, and never speculate.";
 
 async function explainWithGemini(report, env, fetchImpl) {
   const model = env.GEMINI_MODEL || "gemini-3.5-flash-lite";
