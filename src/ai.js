@@ -35,7 +35,7 @@ function extractGeminiText(response) {
 const instructions = "You explain Solana transaction safety reports. Use only the supplied deterministic evidence. Never call a transaction safe; use the exact policy decision. Explain unfamiliar programs as requiring verification, not as malicious. Write 2 concise sentences for a nontechnical user.";
 
 async function explainWithGemini(report, env, fetchImpl) {
-  const model = env.GEMINI_MODEL || "gemini-3.8-flash";
+  const model = env.GEMINI_MODEL || "gemini-3.5-flash-lite";
   const response = await fetchImpl(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
     method: "POST",
     headers: {
