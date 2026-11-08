@@ -59,3 +59,23 @@ test("summarizes an unsigned simulation without claiming broadcast", () => {
   assert.match(report.summary, /not broadcast/);
   assert.equal(report.policy.decision, "safe");
 });
+
+test("uses Rust wire inspection for pre-sign account and instruction counts", () => {
+  const inspection = {
+    available: true,
+    engine: "rust-wire-decoder",
+    transactionVersion: "legacy",
+    instructionCount: 1,
+    writableAccountCount: 3,
+    programIds: ["TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"],
+  };
+  const report = analyzeSimulation({
+    err: null,
+    logs: ["Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb invoke [1]"],
+    unitsConsumed: 1864,
+    innerInstructions: [],
+  }, { inspection });
+  assert.equal(report.instructionCount, 1);
+  assert.equal(report.writableAccounts, 3);
+  assert.equal(report.inspection.engine, "rust-wire-decoder");
+});

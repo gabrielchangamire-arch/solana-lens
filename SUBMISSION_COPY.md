@@ -10,7 +10,7 @@ The pre-sign firewall for Solana transactions.
 
 ## Short description
 
-Solana Lens simulates an unsigned Solana transaction before a user signs it, applies visible safety limits, and explains exactly why it is safe to review or blocked. It never requests a private key, never asks the user to sign, and never broadcasts the transaction.
+Solana Lens uses a Rust wire-format inspector and Solana's simulation RPC to analyze an unsigned transaction before a user signs it, apply visible safety limits, and explain exactly why it is safe to review or blocked. It never requests a private key, never asks the user to sign, and never broadcasts the transaction.
 
 ## The problem
 
@@ -20,7 +20,7 @@ Wallet confirmations expose technical fields but often fail to make practical ri
 
 Solana Lens turns the signing boundary into an inspectable safety workflow:
 
-1. **Simulate:** call Solana's real `simulateTransaction` RPC on an unsigned serialized transaction.
+1. **Inspect and simulate:** decode legacy and v0 wire metadata in Rust, then call Solana's real `simulateTransaction` RPC on the unsigned transaction.
 2. **Enforce:** apply deterministic limits for execution failure, SOL outflow, unfamiliar programs, and writable-account access.
 3. **Explain:** show the evidence and reason for every rule. An optional grounded model can simplify the wording but cannot change the decision.
 
@@ -37,6 +37,7 @@ The app also inspects confirmed Devnet or Mainnet signatures and includes safe a
 ## What is working
 
 - Real unsigned pre-sign simulation.
+- Rust decoding for transaction version, signatures, accounts, writable access, instructions, programs, and lookup-table metadata.
 - No signing, wallet connection, or broadcast path.
 - Configurable deterministic policy engine.
 - Safe, attention, and blocked decisions with per-rule evidence.
@@ -44,7 +45,8 @@ The app also inspects confirmed Devnet or Mainnet signatures and includes safe a
 - Fee, instruction, program, writable-account, transfer, compute, and balance-change views.
 - Optional model-backed explanation constrained to the verified deterministic report.
 - Safe and risky offline demo fixtures.
-- Six automated tests covering analysis, policy, simulation, and AI fallback behavior.
+- Eleven automated tests covering analysis, policy, simulation, Rust decoding, operational controls, and AI fallback behavior.
+- Production safeguards including health/readiness probes, Prometheus metrics, structured logs, request IDs, deadlines and retries, rate limits, bounded concurrency, security headers, graceful shutdown, CI, and a non-root Docker image.
 
 ## Why it is different
 

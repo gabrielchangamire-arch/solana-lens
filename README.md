@@ -2,7 +2,7 @@
 
 **A pre-sign firewall that simulates, enforces, and explains Solana transactions before a user approves them.**
 
-Solana Lens combines live Solana RPC simulation with deterministic, user-configurable safety policies. It can also inspect confirmed transactions and optionally translate the verified report into simpler language with a grounded model explanation. The model never makes or overrides the safety decision.
+Solana Lens combines a Rust wire-format inspector, live Solana RPC simulation, and deterministic, user-configurable safety policies. It can also inspect confirmed transactions and optionally translate the verified report into simpler language with a grounded model explanation. The model never makes or overrides the safety decision.
 
 ## Why it matters
 
@@ -18,6 +18,7 @@ Solana Lens answers those questions without requesting a seed phrase, private ke
 ## What is working
 
 - **Real pre-sign simulation:** accepts an unsigned base64 transaction and calls Solana `simulateTransaction` with signature verification disabled and recent-blockhash replacement enabled.
+- **Rust transaction inspection:** decodes legacy and v0 wire structure to recover exact static-account, writable-account, instruction, program, signature, and lookup-table counts before the RPC call.
 - **Never broadcasts:** simulation produces no signature and never submits the transaction.
 - **Deterministic policy engine:** blocks failed execution, excessive SOL outflow, unfamiliar programs, or excessive writable-account access according to visible limits.
 - **Confirmed-transaction inspection:** reads parsed Devnet or Mainnet transactions through Solana JSON-RPC.
@@ -25,13 +26,15 @@ Solana Lens answers those questions without requesting a seed phrase, private ke
 - **Grounded explanation layer:** when a server-side model credential is configured, it restates only the deterministic report and cannot change its decision.
 - **Reliable judging path:** safe and risky offline fixtures demonstrate both allow and block outcomes even if public RPC is unavailable.
 - **Automated tests:** covers confirmed analysis, failure handling, policy enforcement, simulation parsing, and the no-credential AI fallback.
+- **Operational safeguards:** adds readiness and liveness probes, Prometheus metrics, structured request logs, request IDs, upstream deadlines and retries, API rate limits, bounded simulation concurrency, security headers, graceful shutdown, Docker health checks, and a non-root runtime.
 
 ## Run locally
 
 Requires Node.js 20 or newer.
 
 ```bash
-npm test
+npm run build:rust
+npm run test:all
 npm run dev
 ```
 
@@ -71,6 +74,9 @@ The server uses the Responses API. The report sent to the model contains the det
 unsigned transaction
         |
         v
+Rust wire inspector
+        |
+        v
 Solana simulateTransaction RPC
         |
         v
@@ -84,6 +90,7 @@ deterministic evidence report
 Key modules:
 
 - `src/simulation.js` parses simulation logs and compute usage.
+- `rust/transaction-inspector` decodes transaction wire metadata without signing or broadcasting.
 - `src/analyzer.js` interprets confirmed parsed transactions.
 - `src/policy.js` normalizes user limits and produces the final decision.
 - `src/ai.js` generates an optional evidence-bound explanation.
@@ -92,6 +99,8 @@ Key modules:
 ## API routes
 
 - `GET /api/health` — service status and whether the explanation layer is configured.
+- `GET /api/ready` — deployment readiness and Rust-decoder availability.
+- `GET /api/metrics` — Prometheus-format request, error, latency, and simulation counters.
 - `POST /api/simulate` — simulate an unsigned base64 transaction without broadcasting.
 - `POST /api/analyze` — apply the reusable analyzer to a parsed RPC response.
 - `POST /api/explain` — explain a completed deterministic report without changing it.
@@ -104,9 +113,18 @@ Key modules:
 - Unknown programs are labeled for verification, not declared malicious.
 - “Safe to review” means the configured checks passed; it is not a guarantee.
 
+## Reliability design
+
+- Every response includes a request ID and strict browser security headers.
+- Solana RPC calls have an eight-second deadline and one bounded retry for transient failures.
+- API and simulation-specific limits reduce accidental abuse; concurrent simulations are capped.
+- JSON request logs omit transaction payloads, credentials, and private data.
+- Render uses `/api/ready` for zero-downtime health gating and gives the process time to shut down cleanly.
+- The production image builds Rust separately and runs the final Node service as a non-root user.
+
 ## Next product steps
 
-- Decode unsigned message account metadata so simulation can display exact writable-account and balance-impact previews.
+- Add v1 decoding to the Rust inspector and resolve lookup-table account addresses for exact balance-impact previews.
 - Resolve program identities from a maintained, verified registry.
 - Package the analyzer and policy engine as a wallet-adapter component.
 - Add saved policy profiles for consumers, teams, and treasury operators.

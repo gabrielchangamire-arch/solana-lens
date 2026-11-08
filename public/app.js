@@ -69,7 +69,10 @@ function render(report) {
   const badge = document.querySelector("#result-status");
   badge.textContent = report.status;
   badge.classList.toggle("failed", report.status === "failed");
-  document.querySelector("#result-mode").textContent = report.mode === "simulation" ? "Pre-sign simulation" : "Confirmed transaction";
+  const decodedByRust = report.inspection?.available
+    ? ` · Rust decoded ${report.inspection.transactionVersion}`
+    : "";
+  document.querySelector("#result-mode").textContent = `${report.mode === "simulation" ? "Pre-sign simulation" : "Confirmed transaction"}${decodedByRust}`;
   document.querySelector("#result-network").textContent = report.network;
   document.querySelector("#result-summary").textContent = report.summary;
   document.querySelector("#metric-fee").textContent = report.fee === null ? "Not broadcast" : `${report.fee} SOL`;

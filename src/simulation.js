@@ -19,11 +19,14 @@ function invokedPrograms(logs = []) {
   return [...new Set(ids)];
 }
 
-export function analyzeSimulation(value, { network = "devnet", policies = {} } = {}) {
+export function analyzeSimulation(value, { network = "devnet", policies = {}, inspection = null } = {}) {
   if (!value || !Array.isArray(value.logs)) {
     throw new Error("The RPC response does not contain simulation logs.");
   }
-  const programIds = invokedPrograms(value.logs);
+  const programIds = [...new Set([
+    ...invokedPrograms(value.logs),
+    ...(inspection?.available ? inspection.programIds || [] : []),
+  ])];
   const unknownProgramIds = programIds.filter((id) => !KNOWN_PROGRAMS.has(id));
   const failed = value.err !== null;
   const report = {
@@ -39,11 +42,12 @@ export function analyzeSimulation(value, { network = "devnet", policies = {} } =
     transfers: [],
     changes: [],
     flags: [],
-    instructionCount: value.innerInstructions?.length || 0,
-    writableAccounts: 0,
+    instructionCount: inspection?.available ? inspection.instructionCount : value.innerInstructions?.length || 0,
+    writableAccounts: inspection?.available ? inspection.writableAccountCount : 0,
     unitsConsumed: Number(value.unitsConsumed || 0),
     logs: value.logs,
     error: value.err,
+    inspection,
   };
 
   if (failed) report.flags.push({ level: "danger", title: "Simulation failed", detail: JSON.stringify(value.err) });

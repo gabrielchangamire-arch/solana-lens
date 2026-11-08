@@ -57,7 +57,7 @@ Say:
 
 Say:
 
-> This is a real call to Solana's simulation RPC using an unsigned serialized transaction. Signature verification is disabled, the recent blockhash is replaced for simulation, and the app never broadcasts anything. The result shows that Token-2022 ran and how much compute the transaction consumed.
+> First, a Rust component decodes the transaction's wire structure and recovers the actual instruction and writable-account counts. Then the app makes a real call to Solana's simulation RPC. Signature verification is disabled, the recent blockhash is replaced for simulation, and the app never broadcasts anything.
 
 ### 1:12–1:30 — The differentiator
 
@@ -86,6 +86,14 @@ Then use **Risky demo** and **Safe demo**.
 ### How do you know the transaction was not sent?
 
 > The server only calls the simulation RPC. There is no send or broadcast endpoint, no wallet connection, and the interface never requests a signature or private key.
+
+### Why did you use Rust?
+
+> Rust handles the byte-level transaction boundary. It decodes legacy and v0 wire metadata before the RPC call, so the policy can use the real instruction and writable-account counts. Node remains the orchestration and web layer because replacing working application code would not improve this boundary.
+
+### What did you do for production reliability?
+
+> The service has liveness and readiness probes, Prometheus metrics, structured request logs, request IDs, upstream timeouts and retries, rate limits, bounded simulation concurrency, security headers, graceful shutdown, and a non-root multi-stage Docker build. Those controls are measurable and relevant on managed infrastructure; kernel tuning would not be.
 
 ### Why is the decision deterministic instead of AI-generated?
 
