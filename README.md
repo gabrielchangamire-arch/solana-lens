@@ -58,7 +58,7 @@ set -a && source .env && set +a
 npm run dev
 ```
 
-The server uses the Responses API. The report sent to the model contains the deterministic evidence and policy result; the browser never receives the credential.
+The server prefers Gemini when `GEMINI_API_KEY` is configured and retains the OpenAI Responses API as an optional fallback. The report sent to either model contains only the compact deterministic evidence and policy result; the browser never receives a credential. The model output can explain the result but cannot change it.
 
 ## Demo in 90 seconds
 
@@ -132,6 +132,7 @@ Key modules:
 ## References
 
 - [Solana `simulateTransaction` RPC](https://solana.com/docs/rpc/http/simulatetransaction)
+- [Gemini Generate Content API](https://ai.google.dev/api/generate-content)
 - [OpenAI Responses API](https://developers.openai.com/api/docs/guides/text)
 
 ## Disclaimer

@@ -131,7 +131,7 @@ const server = createServer(async (request, response) => {
     sendJson(response, 200, {
       ok: true,
       uptimeSeconds: Math.round(process.uptime()),
-      explanationConfigured: Boolean(process.env.OPENAI_API_KEY),
+      explanationConfigured: Boolean(process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY),
       commit: process.env.RENDER_GIT_COMMIT?.slice(0, 7) || "local",
     });
     return;

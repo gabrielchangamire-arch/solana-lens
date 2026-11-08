@@ -23,12 +23,41 @@ function extractOutputText(response) {
     .join("\n");
 }
 
-export async function explainWithModel(report, env = process.env) {
-  if (!env.OPENAI_API_KEY) {
-    return { available: false, explanation: null, model: null };
-  }
+function extractGeminiText(response) {
+  return (response.candidates || [])
+    .flatMap((candidate) => candidate.content?.parts || [])
+    .map((part) => part.text)
+    .filter((text) => typeof text === "string")
+    .join("\n")
+    .trim();
+}
+
+const instructions = "You explain Solana transaction safety reports. Use only the supplied deterministic evidence. Never call a transaction safe; use the exact policy decision. Explain unfamiliar programs as requiring verification, not as malicious. Write 2 concise sentences for a nontechnical user.";
+
+async function explainWithGemini(report, env, fetchImpl) {
+  const model = env.GEMINI_MODEL || "gemini-3.8-flash";
+  const response = await fetchImpl(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-goog-api-key": env.GEMINI_API_KEY,
+    },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: instructions }] },
+      contents: [{ role: "user", parts: [{ text: JSON.stringify(compactReport(report)) }] }],
+      generationConfig: { temperature: 0.2, maxOutputTokens: 180 },
+    }),
+  });
+  const payload = await response.json();
+  if (!response.ok) throw new Error(payload.error?.message || `Gemini request failed with HTTP ${response.status}.`);
+  const explanation = extractGeminiText(payload);
+  if (!explanation) throw new Error("Gemini returned an empty explanation.");
+  return { available: true, explanation, model, provider: "gemini" };
+}
+
+async function explainWithOpenAI(report, env, fetchImpl) {
   const model = env.OPENAI_MODEL || "gpt-6-luna";
-  const response = await fetch("https://api.openai.com/v1/responses", {
+  const response = await fetchImpl("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
       "authorization": `Bearer ${env.OPENAI_API_KEY}`,
@@ -37,14 +66,22 @@ export async function explainWithModel(report, env = process.env) {
     body: JSON.stringify({
       model,
       reasoning: { effort: "low" },
-      instructions: "You explain Solana transaction safety reports. Use only the supplied deterministic evidence. Never call a transaction safe; use the exact policy decision. Explain unfamiliar programs as requiring verification, not as malicious. Write 2 concise sentences for a nontechnical user.",
+      instructions,
       input: JSON.stringify(compactReport(report)),
       max_output_tokens: 180,
     }),
   });
   const payload = await response.json();
   if (!response.ok) throw new Error(payload.error?.message || `Model request failed with HTTP ${response.status}.`);
-  return { available: true, explanation: extractOutputText(payload), model };
+  const explanation = extractOutputText(payload).trim();
+  if (!explanation) throw new Error("OpenAI returned an empty explanation.");
+  return { available: true, explanation, model, provider: "openai" };
 }
 
-export const aiHelpers = { compactReport, extractOutputText };
+export async function explainWithModel(report, env = process.env, fetchImpl = fetch) {
+  if (env.GEMINI_API_KEY) return explainWithGemini(report, env, fetchImpl);
+  if (env.OPENAI_API_KEY) return explainWithOpenAI(report, env, fetchImpl);
+  return { available: false, explanation: null, model: null };
+}
+
+export const aiHelpers = { compactReport, extractGeminiText, extractOutputText };

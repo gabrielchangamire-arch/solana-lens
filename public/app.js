@@ -207,7 +207,7 @@ document.querySelector("#ai-button").addEventListener("click", async () => {
     aiStatus.textContent = "Generating an explanation grounded in the deterministic report…";
     const result = await postJson("/api/explain", { report: currentReport });
     if (!result.available) {
-      aiStatus.textContent = "AI is not configured. Set OPENAI_API_KEY on the server; the deterministic analyzer remains fully functional.";
+      aiStatus.textContent = "AI is not configured on the server; the deterministic analyzer remains fully functional.";
       return;
     }
     document.querySelector("#ai-explanation").textContent = result.explanation;
