@@ -22,7 +22,7 @@ Solana Lens turns the signing boundary into an inspectable safety workflow:
 
 1. **Inspect and simulate:** decode legacy and v0 wire metadata in Rust, then call Solana's real `simulateTransaction` RPC on the unsigned transaction.
 2. **Enforce:** apply deterministic limits for execution failure, SOL outflow, unfamiliar programs, and writable-account access.
-3. **Explain:** show the evidence and reason for every rule. An optional grounded model can simplify the wording but cannot change the decision.
+3. **Explain:** show the evidence and reason for every rule. Gemini 3.5 Flash-Lite can simplify the verified report for a nontechnical user but cannot change the deterministic decision.
 
 The app also inspects confirmed Devnet or Mainnet signatures and includes safe and risky offline fixtures so the full policy flow remains demonstrable if a public RPC is unavailable.
 
@@ -43,14 +43,14 @@ The app also inspects confirmed Devnet or Mainnet signatures and includes safe a
 - Safe, attention, and blocked decisions with per-rule evidence.
 - Confirmed Devnet and Mainnet transaction inspection.
 - Fee, instruction, program, writable-account, transfer, compute, and balance-change views.
-- Optional model-backed explanation constrained to the verified deterministic report.
+- Live Gemini explanation constrained to the verified deterministic report, with a hard deadline and deterministic fallback.
 - Safe and risky offline demo fixtures.
-- Eleven automated tests covering analysis, policy, simulation, Rust decoding, operational controls, and AI fallback behavior.
+- Fourteen application tests plus three Rust tests covering analysis, policy, simulation, Rust decoding, operational controls, and grounded-model behavior.
 - Production safeguards including health/readiness probes, Prometheus metrics, structured logs, request IDs, deadlines and retries, rate limits, bounded concurrency, security headers, graceful shutdown, CI, and a non-root Docker image.
 
 ## Why it is different
 
-Solana Lens is not only a post-transaction explorer. Its strongest path happens before a signature exists. The policy engine is transparent rather than a black-box score, and the optional model is deliberately prevented from making the safety decision.
+Solana Lens is not only a post-transaction explorer. Its strongest path happens before a signature exists. The policy engine is transparent rather than a black-box score, and the model is deliberately prevented from making the safety decision. AI makes the on-chain evidence easier to understand while the deterministic policy remains final.
 
 ## Built by
 
@@ -60,7 +60,7 @@ Gabriel Changamire — solo project.
 
 - Top 3 Overall
 - Best Beginner Hack, if the event's eligibility definition applies
-- AI category only when the live deployment has a configured and tested model credential
+- AI Track
 
 ## One-line judge takeaway
 
