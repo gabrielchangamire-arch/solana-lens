@@ -47,6 +47,7 @@ async function explainWithGemini(report, env, fetchImpl) {
       contents: [{ role: "user", parts: [{ text: JSON.stringify(compactReport(report)) }] }],
       generationConfig: { temperature: 0.2, maxOutputTokens: 180 },
     }),
+    signal: AbortSignal.timeout(10_000),
   });
   const payload = await response.json();
   if (!response.ok) throw new Error(payload.error?.message || `Gemini request failed with HTTP ${response.status}.`);
@@ -70,6 +71,7 @@ async function explainWithOpenAI(report, env, fetchImpl) {
       input: JSON.stringify(compactReport(report)),
       max_output_tokens: 180,
     }),
+    signal: AbortSignal.timeout(10_000),
   });
   const payload = await response.json();
   if (!response.ok) throw new Error(payload.error?.message || `Model request failed with HTTP ${response.status}.`);
